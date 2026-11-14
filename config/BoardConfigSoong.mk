@@ -6,8 +6,14 @@
 
 PATH_OVERRIDE_SOONG := $(shell echo $(TOOLS_PATH_OVERRIDE))
 
+# Absolute path of the build top. Needed because the kernel Makefile resolves a
+# relative O= against the kernel source directory, so generated kernel headers
+# must be written through an absolute path.
+BUILD_TOP_ABS := $(abspath .)
+
 # Add variables that we wish to make available to soong here.
 EXPORT_TO_SOONG := \
+    BUILD_TOP_ABS \
     KERNEL_ARCH \
     KERNEL_BUILD_OUT_PREFIX \
     KERNEL_CROSS_COMPILE \

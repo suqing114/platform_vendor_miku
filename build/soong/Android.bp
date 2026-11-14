@@ -21,10 +21,16 @@ bootstrap_go_package {
 miku_generator {
     name: "generated_kernel_includes",
 
-    // The headers make command
+    // The headers make command.
+    // Runs outside sbox (sandbox: false) because `make headers_install` needs the whole
+    // kernel tree (scripts/, Kbuild, arch/...), which sbox cannot provide: it only copies
+    // the files matched by dep_files. BUILD_TOP_ABS is exported by BoardConfigSoong.mk, so
+    // O= is absolute and the generated usr/include tree really lands in $(genDir) (a
+    // relative O= is resolved against the kernel source dir by the kernel Makefile).
+    sandbox: false,
     cmd: "set -e; " +
-         "(cd $(KERNEL_BUILD_OUT_PREFIX).; " +
-         "$(PATH_OVERRIDE_SOONG) $(KERNEL_MAKE_CMD) $(KERNEL_MAKE_FLAGS) -C $(TARGET_KERNEL_SOURCE) O=$(KERNEL_BUILD_OUT_PREFIX)$(genDir) ARCH=$(KERNEL_ARCH) $(KERNEL_CROSS_COMPILE) headers_install && vendor/miku/tools/clean_headers.sh $(KERNEL_BUILD_OUT_PREFIX)$(genDir))",
+         "$(PATH_OVERRIDE_SOONG) $(KERNEL_MAKE_CMD) $(KERNEL_MAKE_FLAGS) -C $(TARGET_KERNEL_SOURCE) O=$(BUILD_TOP_ABS)/$(genDir) ARCH=$(KERNEL_ARCH) $(KERNEL_CROSS_COMPILE) headers_install && " +
+         "vendor/miku/tools/clean_headers.sh $(BUILD_TOP_ABS)/$(genDir)",
 
     // Directories that can be imported by a cc_* module generated_headers property
     export_include_dirs: [

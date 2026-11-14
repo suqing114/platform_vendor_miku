@@ -55,6 +55,15 @@ ifneq ($(TARGET_EXCLUDE_MUSIC_CENTER),true)
 PRODUCT_PACKAGES += MikuUIMusicCenter
 endif
 
+# Miku icon pack: per-package PNG icons (<packageName>.png) loaded by iconloaderlib
+# (Launcher3 / MikuHome), so a bundled theme icon pack applies without extra apps.
+# The icon pack itself is theme artwork and is not shipped in the public tree. Drop the PNGs
+# into vendor/miku/prebuilts/miku_icons/ (one <packageName>.png per app) and they get packaged.
+ifneq ($(wildcard vendor/miku/prebuilts/miku_icons/*.png),)
+PRODUCT_COPY_FILES += \
+    $(call find-copy-subdir-files,*.png,vendor/miku/prebuilts/miku_icons,$(TARGET_COPY_OUT_PRODUCT)/media/miku_icons)
+endif
+
 PRODUCT_PACKAGES += \
     Gboard \
     LiveWallpapersPicker \

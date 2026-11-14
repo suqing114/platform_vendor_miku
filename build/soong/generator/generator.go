@@ -78,6 +78,12 @@ type generatorProperties struct {
 
 	// Declare list of files that should be used for timestamp dependency checking
 	Dep_files []string
+
+	// Run the command inside an sbox sandbox. Defaults to true.
+	// Set to false when the command needs the whole kernel source tree (sbox only
+	// copies the files listed in dep_files) or writes generated headers directly
+	// into $(genDir) through an absolute path.
+	Sandbox *bool
 }
 
 type Module struct {
@@ -262,7 +268,14 @@ func (g *Module) GenerateAndroidBuildActions(ctx android.ModuleContext) {
 	manifestPath := android.PathForModuleOut(ctx, "generator.sbox.textproto")
 
 	// Use a RuleBuilder to create a rule that runs the command inside an sbox sandbox.
-	rule := android.NewRuleBuilder(pctx, ctx).Sbox(genDir, manifestPath)
+	rule := android.NewRuleBuilder(pctx, ctx)
+	sandbox := true
+	if g.properties.Sandbox != nil {
+		sandbox = *g.properties.Sandbox
+	}
+	if sandbox {
+		rule.Sbox(genDir, manifestPath)
+	}
 
 	rule.Command().
 		Text(rawCommand).
